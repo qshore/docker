@@ -1,17 +1,11 @@
-# Use an official Python runtime as a parent image
- FROM centos:latest
+FROM centos:latest
+ARG DOCKER_GID=993
 
-# Set the working directory to /test
- RUN mkdir -p /test/
- WORKDIR /test
+RUN groupadd -g ${DOCKER_GID} docker \
+  && curl -sSL https://get.docker.com/ | sh \
+  && yum -q autoremove \
+  && yum -q clean -y \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*.bin 
 
-# Copy the current directory contents into the container at /test/
- ADD tmp/ /test/
-
-RUN yum update -y
- RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
- RUN python get-pip.py
- RUN pip install Jinja2
-
-# Run script.sh when the container launches
- CMD ["/bin/bash", "/test/hello.sh"]
+RUN useradd -m -d /home/jenkins -s /bin/sh jenkins \
+  && usermod -aG docker jenkins
